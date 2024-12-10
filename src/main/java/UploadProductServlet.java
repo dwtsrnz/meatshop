@@ -3,77 +3,79 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
-@WebServlet("/UploadProductServlet")
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024,  // 1MB
-        maxFileSize = 1024 * 1024 * 10,   // 10MB
-        maxRequestSize = 1024 * 1024 * 15  // 15MB
-)
+@WebServlet("/uploadProduct")
+@MultipartConfig(maxFileSize = 16177215) // 16MB limit for uploaded file
 public class UploadProductServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        // Get form parameters
-        String name = request.getParameter("name");
-        String description = request.getParameter("description");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Retrieve data from the form
+        String meatType = request.getParameter("meatType");
+        String meatName = request.getParameter("meatName");
         String priceStr = request.getParameter("price");
-        Part imagePart = request.getPart("image");  // Get the uploaded image file
+        Part meatImagePart = request.getPart("meatImage"); // Retrieve the image part
 
-        double price = 0;
+        // Validate inputs
+        if (meatType == null || meatName == null || priceStr == null ||
+                meatType.isEmpty() || meatName.isEmpty() || priceStr.isEmpty() ||
+                meatImagePart == null || meatImagePart.getSize() == 0) {
+            request.setAttribute("error", "All fields are required, including an image.");
+            request.getRequestDispatcher("upload_product.jsp").forward(request, response);
+            return;
+        }
+
+        double price;
         try {
-            price = Double.parseDouble(priceStr); // Parse price
+            price = Double.parseDouble(priceStr);
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid price format.");
+            request.setAttribute("error", "Invalid price format.");
+            request.getRequestDispatcher("upload_product.jsp").forward(request, response);
             return;
         }
 
-        // InputStream to store the image as BLOB
-        InputStream imageInputStream = null;
+        // Get the current user's session
+        HttpSession session = request.getSession();
+        String username = (String) session.getAttribute("username");
 
-        if (imagePart != null) {
-            imageInputStream = imagePart.getInputStream(); // Get input stream from image file
-        } else {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Image file is required.");
+        if (username == null) {
+            response.sendRedirect("login.jsp"); // Redirect to login if not logged in
             return;
         }
 
-        // Store data in the database
+        // Insert product into the database
         try (Connection connection = DatabaseConnection.getConnection()) {
-            // SQL Query to insert product details and image into the database
-            String sql = "INSERT INTO products (name, description, price, image) VALUES (?, ?, ?, ?)";
-
+            String sql = "INSERT INTO meats (meat_type, meat_name, price, meat_image) VALUES (?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                // Set parameters for SQL query
-                statement.setString(1, name);
-                statement.setString(2, description);
+                statement.setString(1, meatType);
+                statement.setString(2, meatName);
                 statement.setDouble(3, price);
-                statement.setBlob(4, imageInputStream);  // Set the BLOB value for the image
 
-                // Execute the query
-                int rowsAffected = statement.executeUpdate();
-                if (rowsAffected > 0) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().println("Product uploaded successfully!");
-                } else {
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload product.");
-                }
-            } catch (SQLException e) {
-                log("SQL Error: ", e);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
+                // Convert uploaded image to InputStream
+                InputStream meatImageStream = meatImagePart.getInputStream();
+                statement.setBlob(4, meatImageStream);
+
+                statement.executeUpdate();
             }
+
+            request.setAttribute("success", "Product uploaded successfully.");
+            response.sendRedirect("index.jsp");
         } catch (SQLException e) {
-            log("Database Connection Error: ", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to connect to the database.");
+            e.printStackTrace();
+            request.setAttribute("error", "An error occurred while uploading the product.");
         }
+
+        // Redirect back to the upload page with a success or error message
+        request.getRequestDispatcher("upload_product.jsp").forward(request, response);
     }
 }

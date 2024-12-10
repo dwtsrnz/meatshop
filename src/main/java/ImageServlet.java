@@ -12,45 +12,34 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet("/image")
 public class ImageServlet extends HttpServlet {
-    private static final String IMAGE_QUERY = "SELECT image FROM products WHERE id = ?";
+    private static final long serialVersionUID = 1L;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String id = request.getParameter("id");
-        if (id == null || id.trim().isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Image ID is required");
+        if (id == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing image ID");
             return;
         }
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(IMAGE_QUERY)) {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            String sql = "SELECT meat_image FROM meats WHERE meat_id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setInt(1, Integer.parseInt(id));
 
-            statement.setString(1, id);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    // Retrieve the BLOB image data
-                    byte[] imageData = resultSet.getBytes("image");
-
-                    if (imageData != null) {
-                        response.setContentType("image/jpeg"); // Default to JPEG
-                        response.setContentLength(imageData.length);
-
-                        try (OutputStream out = response.getOutputStream()) {
-                            out.write(imageData);
-                        }
+                try (var resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        byte[] imageData = resultSet.getBytes("meat_image");
+                        response.setContentType("image/jpeg"); // Change to appropriate type
+                        response.getOutputStream().write(imageData);
                     } else {
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found.");
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found");
                     }
-                } else {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found.");
                 }
             }
         } catch (SQLException e) {
-            log("Database error retrieving image", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
         }
     }
 }

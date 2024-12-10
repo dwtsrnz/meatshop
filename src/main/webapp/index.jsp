@@ -1,4 +1,6 @@
 <%@ page import="jakarta.servlet.http.HttpSession" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/sql" prefix="sql" %>
 <%
     String username = (String) session.getAttribute("username");
 
@@ -24,7 +26,7 @@
 
         /* Navbar */
         header {
-            background-color: #7e054a;
+            background-color: #3f3f3f;
             width: 100vw;
             position: fixed;
             top: 0;
@@ -47,8 +49,12 @@
             font-size: 16px;
         }
 
+        .user{
+            color: #fff;
+        }
+
         .navbar .logout {
-            color: #fff8f8;
+            color: red;
         }
 
         /* Grid container */
@@ -196,13 +202,13 @@
 <header>
     <div class="navbar">
         <div class="links">
-            <a href="#">Home</a>
-            <a href="#">Products</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact</a>
+            <a href="/">Home</a>
+            <a href="/upload_product.jsp">upload</a>
+            <a href="/edit_meat.jsp">edit</a>
+            <a href="/deletemeat.jsp">delete</a>
         </div>
         <div class="user">
-            <span><%= username %></span> <a class="logout" href="logout.jsp">Logout</a>
+            <span><%= username %></span> <a class="logout" href="/logout">Logout</a>
         </div>
     </div>
 </header>
@@ -219,47 +225,17 @@
 
 <!-- Grid container -->
 <div class="grid-container">
-
     <c:forEach var="row" items="${result.rows}">
         <div class="grid-item">
-            <p>${row.name}</p>
-            <img src="image?id=${row.id}" alt="${row.name}" style="max-width: 300px;"/>
+            <img src="image?id=${row.meat_id}" alt="${row.meat_name}" style="max-width: 300px;" />
             <div class="info">
-                <h3>PANDA low</h3>
-                <p>USA</p>
-                <img src="https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco/b1bcbca4-e853-4df7-b329-5be3c61ee057/NIKE+DUNK+LOW+RETRO.png" alt="PANDA low">
-                <div class="price">400k</div>
-                <button class="cart-btn" onclick="addToCart('PANDA low', 400)">Add to Cart</button>
+                <h3>${row.meat_name}</h3>
+                <p>${row.type}</p>
+                <div class="price">${row.price}k</div>
+                <button class="cart-btn" onclick="addToCart('${row.meat_name}', ${row.price})">Add to Cart</button>
             </div>
         </div>
     </c:forEach>
-    <div class="grid-item">
-        <div class="info">
-            <h3>PANDA low</h3>
-            <p>USA</p>
-            <img src="https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco/b1bcbca4-e853-4df7-b329-5be3c61ee057/NIKE+DUNK+LOW+RETRO.png" alt="PANDA low">
-            <div class="price">400k</div>
-            <button class="cart-btn" onclick="addToCart('PANDA low', 400)">Add to Cart</button>
-        </div>
-    </div>
-    <div class="grid-item">
-        <div class="info">
-            <h3>Air force</h3>
-            <p>USA</p>
-            <img src="https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/AIR+FORCE+1+%2707.png" alt="Air force">
-            <div class="price">350k</div>
-            <button class="cart-btn" onclick="addToCart('Air force', 350)">Add to Cart</button>
-        </div>
-    </div>
-    <div class="grid-item">
-        <div class="info">
-            <h3>Jordan low dunk</h3>
-            <p>USA</p>
-            <img src="https://th.bing.com/th/id/OIP.jWKsX-W0zL1Gr3rEyapbagAAAA?rs=1&pid=ImgDetMain" alt="Jordan low dunk">
-            <div class="price">255k</div>
-            <button class="cart-btn" onclick="addToCart('Jordan low dunk', 255)">Add to Cart</button>
-        </div>
-    </div>
 </div>
 
 <script>
