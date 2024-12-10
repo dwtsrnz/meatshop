@@ -1,5 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/sql" prefix="sql" %>
+
+
+<sql:setDataSource var="dataSource"
+                   driver="com.mysql.cj.jdbc.Driver"
+                   url="jdbc:mysql://localhost:3306/meatshop?useSSL=false&serverTimezone=UTC"
+                   user="root"
+                   password="admin" />
+
+<sql:query dataSource="${dataSource}" var="meats">
+    SELECT * FROM meats;
+</sql:query>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +38,7 @@
         <th>Price</th>
         <th>Actions</th>
     </tr>
-    <c:forEach var="meat" items="${meats}">
+    <c:forEach var="meat" items="${meats.rows}">
         <tr>
             <td>${meat.meat_id}</td>
             <td>${meat.meat_type}</td>

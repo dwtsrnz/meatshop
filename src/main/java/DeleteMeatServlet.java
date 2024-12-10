@@ -38,9 +38,9 @@ public class DeleteMeatServlet extends HttpServlet {
                 int rowsDeleted = statement.executeUpdate();
 
                 if (rowsDeleted > 0) {
-                    response.sendRedirect("view_meats.jsp?success=Meat+deleted+successfully");
+                    response.sendRedirect("index.jsp?success=Meat+deleted+successfully");
                 } else {
-                    response.sendRedirect("view_meats.jsp?error=Meat+not+found");
+                    response.sendRedirect("index.jsp?error=Meat+not+found");
                 }
             }
         } catch (SQLException e) {

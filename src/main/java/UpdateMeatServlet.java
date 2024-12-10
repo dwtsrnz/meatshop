@@ -63,6 +63,7 @@ public class UpdateMeatServlet extends HttpServlet {
 
                 if (rowsUpdated > 0) {
                     request.setAttribute("success", "Meat updated successfully.");
+
                 } else {
                     request.setAttribute("error", "Meat not found.");
                 }

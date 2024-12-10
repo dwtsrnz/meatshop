@@ -204,8 +204,7 @@
         <div class="links">
             <a href="/">Home</a>
             <a href="/upload_product.jsp">upload</a>
-            <a href="/edit_meat.jsp">edit</a>
-            <a href="/deletemeat.jsp">delete</a>
+            <a href="/deletemeat.jsp">edit</a>
         </div>
         <div class="user">
             <span><%= username %></span> <a class="logout" href="/logout">Logout</a>
@@ -229,9 +228,9 @@
         <div class="grid-item">
             <img src="image?id=${row.meat_id}" alt="${row.meat_name}" style="max-width: 300px;" />
             <div class="info">
-                <h3>${row.meat_name}</h3>
-                <p>${row.type}</p>
-                <div class="price">${row.price}k</div>
+                <h3>name: ${row.meat_name}</h3>
+                <p>type: ${row.meat_type}</p>
+                <div class="price">price: ${row.price}k</div>
                 <button class="cart-btn" onclick="addToCart('${row.meat_name}', ${row.price})">Add to Cart</button>
             </div>
         </div>

@@ -68,14 +68,13 @@ public class UploadProductServlet extends HttpServlet {
                 statement.executeUpdate();
             }
 
-            request.setAttribute("success", "Product uploaded successfully.");
+            // Redirect to index page after successful upload
             response.sendRedirect("index.jsp");
+            return; // Ensure no further processing occurs
         } catch (SQLException e) {
             e.printStackTrace();
             request.setAttribute("error", "An error occurred while uploading the product.");
+            request.getRequestDispatcher("upload_product.jsp").forward(request, response);
         }
-
-        // Redirect back to the upload page with a success or error message
-        request.getRequestDispatcher("upload_product.jsp").forward(request, response);
     }
 }
